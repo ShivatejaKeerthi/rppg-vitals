@@ -1,21 +1,14 @@
 import { useState, useEffect } from "react";
 import { WebcamCapture } from "./components/WebcamCapture";
 import { BpmDisplay } from "./components/BpmDisplay";
-import { SignalChart } from "./components/SignalChart";
-import { SessionHistory } from "./components/SessionHistory";
-import { BreathingExercise } from "./components/BreathingExercise";
 import { BrpmDisplay } from "./components/BrpmDisplay";
 import { HrvDisplay } from "./components/HrvDisplay";
+import { SignalChart } from "./components/SignalChart";
+import { SessionHistory } from "./components/SessionHistory";
 import { useRppg } from "./hooks/useRppg";
 import { API_BASE } from "./config";
 
-const TABS = [
-  { id: "hr",        label: "Heart Rate" },
-  { id: "breathing", label: "Breathing" },
-];
-
 export default function App() {
-  const [tab, setTab] = useState("hr");
   const [active, setActive] = useState(false);
   const {
     bpm, confidence, quality, anomalies,
@@ -39,7 +32,7 @@ export default function App() {
 
   return (
     <div
-      className="h-screen overflow-hidden text-white flex flex-col p-3 gap-3"
+      className="min-h-screen text-white"
       style={{
         background:
           "radial-gradient(ellipse at 15% 15%, rgba(16,185,129,0.08) 0%, transparent 45%)," +
@@ -47,50 +40,27 @@ export default function App() {
           "#05080f",
       }}
     >
-      {/* Header */}
-      <header className="flex-none flex items-center justify-between px-1">
+      <div className="p-3 flex flex-col gap-3">
 
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}
-          >
-            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-emerald-400">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-base font-bold tracking-tight leading-none text-white">
-              Wise<span className="text-emerald-400">Vitals</span>
-            </h1>
-            <p className="text-gray-500 text-xs mt-0.5">Camera-based vitals · no wearable needed</p>
-          </div>
-        </div>
-
-        {/* Tabs */}
-        <div
-          className="flex rounded-xl p-0.5 gap-0.5"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
-        >
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => { setTab(t.id); if (active) { reset(); setActive(false); } }}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200"
-              style={
-                tab === t.id
-                  ? { background: "rgba(255,255,255,0.1)", color: "#f9fafb" }
-                  : { color: "#6b7280" }
-              }
+        {/* Header */}
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}
             >
-              {t.label}
-            </button>
-          ))}
-        </div>
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-emerald-400">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-base font-bold tracking-tight leading-none text-white">
+                Wise<span className="text-emerald-400">Vitals</span>
+              </h1>
+              <p className="text-gray-500 text-xs mt-0.5">Camera-based vitals · no wearable needed</p>
+            </div>
+          </div>
 
-        {/* Action button — only shown on HR tab */}
-        {tab === "hr" && (
           <button
             onClick={toggle}
             className="px-5 py-2 rounded-xl font-semibold text-sm tracking-wide transition-all duration-200"
@@ -102,47 +72,32 @@ export default function App() {
           >
             {active ? "⏹ Stop" : "▶ Start Monitoring"}
           </button>
-        )}
-        {tab === "breathing" && <div className="w-[130px]" />}
-      </header>
+        </header>
 
-      {/* Main content */}
-      <div className="flex-1 flex gap-3 min-h-0">
+        {/* Main content */}
+        <div className="flex gap-3 items-start">
 
-        {tab === "hr" && (
-          <>
-            {/* Left — webcam */}
-            <div className="flex-1 min-h-0 min-w-0 rounded-2xl overflow-hidden glass glow-border">
-              <WebcamCapture onSample={addSample} active={active} />
-            </div>
-
-            {/* Right — metrics */}
-            <div className="w-[320px] flex-none flex flex-col gap-3 min-h-0">
-              <div className="flex-none">
-                <BpmDisplay bpm={bpm} confidence={confidence} quality={quality} anomalies={anomalies} />
-              </div>
-              <div className="flex-none">
-                <BrpmDisplay brpm={brpm} breathingConfidence={breathingConfidence} />
-              </div>
-              <div className="flex-none">
-                <HrvDisplay hrvRmssd={hrvRmssd} stressLevel={stressLevel} stressScore={stressScore} />
-              </div>
-              <div className="flex-none">
-                <SignalChart signalBuffer={signalBuffer} />
-              </div>
-              <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl">
-                <SessionHistory sessions={sessions} onClear={clearSessions} onExport={exportCsv} />
-              </div>
-            </div>
-          </>
-        )}
-
-        {tab === "breathing" && (
-          <div className="flex-1 min-h-0 glass rounded-2xl">
-            <BreathingExercise />
+          {/* Left — webcam, natural 16:9 */}
+          <div
+            className="flex-1 rounded-2xl overflow-hidden glass glow-border"
+            style={{ aspectRatio: "16/9" }}
+          >
+            <WebcamCapture onSample={addSample} active={active} />
           </div>
-        )}
 
+          {/* Right — sticky vitals panel, scrolls internally if needed */}
+          <div
+            className="w-[320px] flex-none flex flex-col gap-3 overflow-y-auto"
+            style={{ position: "sticky", top: "12px", maxHeight: "calc(100vh - 24px)" }}
+          >
+            <BpmDisplay bpm={bpm} confidence={confidence} quality={quality} anomalies={anomalies} />
+            <BrpmDisplay brpm={brpm} breathingConfidence={breathingConfidence} />
+            <HrvDisplay hrvRmssd={hrvRmssd} stressLevel={stressLevel} stressScore={stressScore} />
+            <SignalChart signalBuffer={signalBuffer} />
+            <SessionHistory sessions={sessions} onClear={clearSessions} onExport={exportCsv} />
+          </div>
+
+        </div>
       </div>
     </div>
   );

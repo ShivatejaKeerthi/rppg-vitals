@@ -1,14 +1,14 @@
 export function SessionHistory({ sessions, onClear, onExport }) {
   if (sessions.length === 0) {
     return (
-      <div className="glass rounded-2xl p-4 text-center text-gray-600 text-xs h-full flex items-center justify-center">
+      <div className="glass rounded-2xl p-4 text-center text-gray-600 text-xs flex items-center justify-center min-h-[60px]">
         Session readings auto-save every 10s<br />when signal quality is ≥ 30%.
       </div>
     );
   }
 
   return (
-    <div className="glass rounded-2xl overflow-hidden h-full flex flex-col">
+    <div className="glass rounded-2xl overflow-hidden flex flex-col">
       {/* Header */}
       <div
         className="flex-none flex items-center justify-between px-4 py-2.5"
@@ -44,7 +44,7 @@ export function SessionHistory({ sessions, onClear, onExport }) {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-y-auto">
+      <div>
         <table className="w-full text-xs">
           <thead className="sticky top-0" style={{ background: "rgba(5,8,15,0.8)" }}>
             <tr className="text-gray-600 uppercase">
