@@ -31,6 +31,75 @@ def detect_anomalies(raw: np.ndarray, bpm: float, confidence: float) -> list[str
     return flags
 
 
+def _find_peaks(signal: np.ndarray, min_distance: int) -> np.ndarray:
+    """Local maxima with minimum distance constraint — no scipy needed."""
+    kernel = np.ones(5) / 5
+    smoothed = np.convolve(signal, kernel, mode="same")
+
+    candidates = [
+        i for i in range(1, len(smoothed) - 1)
+        if smoothed[i] >= smoothed[i - 1] and smoothed[i] >= smoothed[i + 1]
+    ]
+    if not candidates:
+        return np.array([])
+
+    # Keep only the tallest peak within each min_distance window
+    kept = [candidates[0]]
+    for idx in candidates[1:]:
+        if idx - kept[-1] >= min_distance:
+            kept.append(idx)
+        elif signal[idx] > signal[kept[-1]]:
+            kept[-1] = idx
+    return np.array(kept)
+
+
+def compute_hrv(green_signal: list[float], fps: float = 30.0) -> dict:
+    """
+    RMSSD-based HRV from inter-beat intervals detected in the rPPG signal.
+    Needs ~20s of data. RMSSD in ms: high = relaxed, low = stressed.
+    """
+    signal = np.array(green_signal, dtype=np.float64)
+    if len(signal) < int(fps * 20):
+        return {"hrv_rmssd": None, "stress_level": "unknown", "stress_score": 0.0}
+
+    signal = _detrend(signal)
+    std = np.std(signal)
+    if std < 1e-9:
+        return {"hrv_rmssd": None, "stress_level": "unknown", "stress_score": 0.0}
+    signal = signal / std
+
+    # Minimum peak distance = samples at 180 BPM max
+    min_dist = max(int(fps * 60 / 180), 8)
+    peaks = _find_peaks(signal, min_distance=min_dist)
+
+    if len(peaks) < 4:
+        return {"hrv_rmssd": None, "stress_level": "unknown", "stress_score": 0.0}
+
+    # RR intervals in ms; filter to physiological range (40–180 BPM)
+    rr = np.diff(peaks) / fps * 1000
+    rr = rr[(rr >= 333) & (rr <= 1500)]
+
+    if len(rr) < 3:
+        return {"hrv_rmssd": None, "stress_level": "unknown", "stress_score": 0.0}
+
+    rmssd = float(np.sqrt(np.mean(np.diff(rr) ** 2)))
+
+    if rmssd >= 50:
+        label, score = "relaxed",    0.10
+    elif rmssd >= 35:
+        label, score = "normal",     0.35
+    elif rmssd >= 20:
+        label, score = "elevated",   0.65
+    else:
+        label, score = "high stress", 0.90
+
+    return {
+        "hrv_rmssd":   round(rmssd, 1),
+        "stress_level": label,
+        "stress_score": round(score, 2),
+    }
+
+
 def compute_brpm(green_signal: list[float], fps: float = 30.0) -> dict:
     """Extract breathing rate from the low-frequency rPPG signal modulation (0.1–0.5 Hz)."""
     signal = np.array(green_signal, dtype=np.float64)

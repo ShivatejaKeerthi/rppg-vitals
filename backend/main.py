@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime, timezone
-from rppg import compute_bpm, compute_brpm
+from rppg import compute_bpm, compute_brpm, compute_hrv
 
 app = FastAPI(title="rPPG Heart Rate API")
 
@@ -27,6 +27,9 @@ class AnalyzeResponse(BaseModel):
     anomalies: list[str] = []
     brpm: Optional[float] = None
     breathing_confidence: float = 0.0
+    hrv_rmssd: Optional[float] = None
+    stress_level: str = "unknown"
+    stress_score: float = 0.0
     error: Optional[str] = None
 
 
@@ -80,4 +83,5 @@ def analyze(req: AnalyzeRequest):
 
     result = compute_bpm(req.green_signal, fps=req.fps)
     result.update(compute_brpm(req.green_signal, fps=req.fps))
+    result.update(compute_hrv(req.green_signal, fps=req.fps))
     return AnalyzeResponse(**result)

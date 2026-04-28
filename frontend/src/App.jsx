@@ -5,6 +5,7 @@ import { SignalChart } from "./components/SignalChart";
 import { SessionHistory } from "./components/SessionHistory";
 import { BreathingExercise } from "./components/BreathingExercise";
 import { BrpmDisplay } from "./components/BrpmDisplay";
+import { HrvDisplay } from "./components/HrvDisplay";
 import { useRppg } from "./hooks/useRppg";
 import { API_BASE } from "./config";
 
@@ -17,7 +18,9 @@ export default function App() {
   const [tab, setTab] = useState("hr");
   const [active, setActive] = useState(false);
   const {
-    bpm, confidence, quality, anomalies, brpm, breathingConfidence,
+    bpm, confidence, quality, anomalies,
+    brpm, breathingConfidence,
+    hrvRmssd, stressLevel, stressScore,
     signalBuffer, sessions, addSample, reset, clearSessions, exportCsv,
   } = useRppg();
 
@@ -114,12 +117,15 @@ export default function App() {
             </div>
 
             {/* Right — metrics */}
-            <div className="w-[300px] flex-none flex flex-col gap-3 min-h-0">
+            <div className="w-[320px] flex-none flex flex-col gap-3 min-h-0">
               <div className="flex-none">
                 <BpmDisplay bpm={bpm} confidence={confidence} quality={quality} anomalies={anomalies} />
               </div>
               <div className="flex-none">
                 <BrpmDisplay brpm={brpm} breathingConfidence={breathingConfidence} />
+              </div>
+              <div className="flex-none">
+                <HrvDisplay hrvRmssd={hrvRmssd} stressLevel={stressLevel} stressScore={stressScore} />
               </div>
               <div className="flex-none">
                 <SignalChart signalBuffer={signalBuffer} />

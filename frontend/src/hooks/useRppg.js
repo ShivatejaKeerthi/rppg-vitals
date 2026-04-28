@@ -13,6 +13,9 @@ export function useRppg() {
   const [anomalies, setAnomalies] = useState([]);
   const [brpm, setBrpm] = useState(null);
   const [breathingConfidence, setBreathingConfidence] = useState(0);
+  const [hrvRmssd, setHrvRmssd] = useState(null);
+  const [stressLevel, setStressLevel] = useState("unknown");
+  const [stressScore, setStressScore] = useState(0);
   const [signalBuffer, setSignalBuffer] = useState([]);
   const [sessions, setSessions] = useState([]);
 
@@ -46,6 +49,9 @@ export function useRppg() {
         setAnomalies(data.anomalies ?? []);
         if (data.brpm != null) setBrpm(data.brpm);
         setBreathingConfidence(data.breathing_confidence ?? 0);
+        if (data.hrv_rmssd != null) setHrvRmssd(data.hrv_rmssd);
+        setStressLevel(data.stress_level ?? "unknown");
+        setStressScore(data.stress_score ?? 0);
 
         // Auto-save session snapshot every 10s if signal is good
         if (
@@ -76,6 +82,9 @@ export function useRppg() {
     setAnomalies([]);
     setBrpm(null);
     setBreathingConfidence(0);
+    setHrvRmssd(null);
+    setStressLevel("unknown");
+    setStressScore(0);
     lastCallRef.current = 0;
     lastSaveRef.current = 0;
   }, []);
@@ -100,5 +109,5 @@ export function useRppg() {
     URL.revokeObjectURL(url);
   }, [sessions]);
 
-  return { bpm, confidence, quality, anomalies, brpm, breathingConfidence, signalBuffer, sessions, addSample, reset, clearSessions, exportCsv };
+  return { bpm, confidence, quality, anomalies, brpm, breathingConfidence, hrvRmssd, stressLevel, stressScore, signalBuffer, sessions, addSample, reset, clearSessions, exportCsv };
 }
