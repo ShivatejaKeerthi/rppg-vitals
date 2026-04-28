@@ -22,7 +22,7 @@ function StressGauge({ score }) {
   return (
     <div>
       <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-        <span>Stress index{score === 0 ? " (needs ~20s)" : ""}</span>
+        <span className="truncate mr-2">Stress index{score === 0 ? " (needs ~20s)" : ""}</span>
         <span style={{ color: score < 0.4 ? "#10b981" : score < 0.7 ? "#f59e0b" : "#ef4444" }}>
           {pct}%
         </span>
@@ -59,13 +59,13 @@ export function HrvDisplay({ hrvRmssd, stressLevel, stressScore }) {
     <div className="glass rounded-2xl p-4 flex flex-col gap-3">
 
       {/* Title row */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
           <BrainIcon />
-          <span className="text-xs font-medium uppercase tracking-widest text-gray-400">HRV · Stress</span>
+          <span className="text-xs font-medium uppercase tracking-widest text-gray-400 truncate">HRV · Stress</span>
         </div>
         <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
+          className="flex-none text-xs font-semibold px-2 py-0.5 rounded-full"
           style={{ color: ss.color, background: ss.bg, border: `1px solid ${ss.border}` }}
         >
           {ss.label}

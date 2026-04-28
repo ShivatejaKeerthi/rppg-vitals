@@ -43,58 +43,60 @@ export default function App() {
       <div className="p-3 flex flex-col gap-3">
 
         {/* Header */}
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              className="w-8 h-8 rounded-lg flex-none flex items-center justify-center"
               style={{ background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.3)" }}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-emerald-400">
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
               </svg>
             </div>
-            <div>
-              <h1 className="text-base font-bold tracking-tight leading-none text-white">
+            <div className="min-w-0">
+              <h1 className="text-base font-bold tracking-tight leading-none text-white truncate">
                 Wise<span className="text-emerald-400">Vitals</span>
               </h1>
-              <p className="text-gray-500 text-xs mt-0.5">Camera-based vitals · no wearable needed</p>
+              <p className="text-gray-500 text-xs mt-0.5 hidden sm:block">Camera-based vitals · no wearable needed</p>
             </div>
           </div>
 
           <button
             onClick={toggle}
-            className="px-5 py-2 rounded-xl font-semibold text-sm tracking-wide transition-all duration-200"
+            className="flex-none px-4 py-2 rounded-xl font-semibold text-sm tracking-wide transition-all duration-200"
             style={
               active
                 ? { background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171" }
                 : { background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.4)", color: "#34d399" }
             }
           >
-            {active ? "⏹ Stop" : "▶ Start Monitoring"}
+            {active ? "⏹ Stop" : "▶ Start"}
           </button>
         </header>
 
         {/* Main content */}
-        <div className="flex gap-3 items-start">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-3">
 
-          {/* Left — webcam, natural 16:9 */}
-          <div
-            className="flex-1 rounded-2xl overflow-hidden glass glow-border"
-            style={{ aspectRatio: "16/9" }}
-          >
-            <WebcamCapture onSample={addSample} active={active} />
+          {/* Left half — camera; sticky on desktop so it stays in view while right side scrolls */}
+          <div className="lg:w-1/2 lg:flex-none lg:sticky lg:top-3">
+            <div
+              className="rounded-2xl overflow-hidden glass glow-border"
+              style={{ aspectRatio: "4/3" }}
+            >
+              <WebcamCapture onSample={addSample} active={active} />
+            </div>
           </div>
 
-          {/* Right — sticky vitals panel, scrolls internally if needed */}
-          <div
-            className="w-[320px] flex-none flex flex-col gap-3 overflow-y-auto"
-            style={{ position: "sticky", top: "12px", maxHeight: "calc(100vh - 24px)" }}
-          >
+          {/* Right half — 2×2 grid on desktop; session history spans full row at bottom */}
+          <div className="flex flex-col gap-3 lg:flex-1 lg:grid lg:grid-cols-2 lg:content-start">
             <BpmDisplay bpm={bpm} confidence={confidence} quality={quality} anomalies={anomalies} />
             <BrpmDisplay brpm={brpm} breathingConfidence={breathingConfidence} />
             <HrvDisplay hrvRmssd={hrvRmssd} stressLevel={stressLevel} stressScore={stressScore} />
             <SignalChart signalBuffer={signalBuffer} />
-            <SessionHistory sessions={sessions} onClear={clearSessions} onExport={exportCsv} />
+            {/* Session history — full-width row on desktop, normal on mobile */}
+            <div className="lg:col-span-2">
+              <SessionHistory sessions={sessions} onClear={clearSessions} onExport={exportCsv} />
+            </div>
           </div>
 
         </div>

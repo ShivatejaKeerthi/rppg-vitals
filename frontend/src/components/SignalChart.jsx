@@ -1,5 +1,5 @@
 import {
-  AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, defs, linearGradient,
+  AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip,
 } from "recharts";
 
 export function SignalChart({ signalBuffer }) {

@@ -30,13 +30,13 @@ export function BrpmDisplay({ brpm, breathingConfidence }) {
     <div className="glass rounded-2xl p-4 flex flex-col gap-3">
 
       {/* Title row */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
           <LungIcon />
-          <span className="text-xs font-medium uppercase tracking-widest text-gray-400">Breathing Rate</span>
+          <span className="text-xs font-medium uppercase tracking-widest text-gray-400 truncate">Breathing Rate</span>
         </div>
         <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
+          className="flex-none text-xs font-semibold px-2 py-0.5 rounded-full"
           style={{ color: qs.color, background: qs.bg, border: `1px solid ${qs.border}` }}
         >
           {qs.label}
@@ -69,7 +69,7 @@ export function BrpmDisplay({ brpm, breathingConfidence }) {
       {/* Quality bar */}
       <div>
         <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-          <span>Signal quality{brpm == null ? " (needs ~10s)" : ""}</span>
+          <span className="truncate mr-2">Signal quality{brpm == null ? " (needs ~10s)" : ""}</span>
           <span style={{ color: qs.color }}>{pct}%</span>
         </div>
         <div className="w-full h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>

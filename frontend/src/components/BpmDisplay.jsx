@@ -33,13 +33,13 @@ export function BpmDisplay({ bpm, confidence, quality, anomalies }) {
     <div className="glass rounded-2xl p-4 flex flex-col gap-3">
 
       {/* Title row */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
           <HeartIcon bpm={bpm} />
-          <span className="text-xs font-medium uppercase tracking-widest text-gray-400">Heart Rate</span>
+          <span className="text-xs font-medium uppercase tracking-widest text-gray-400 truncate">Heart Rate</span>
         </div>
         <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full"
+          className="flex-none text-xs font-semibold px-2 py-0.5 rounded-full"
           style={{ color: qs.color, background: qs.bg, border: `1px solid ${qs.border}` }}
         >
           {qs.label}
