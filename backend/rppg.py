@@ -1,11 +1,11 @@
 import numpy as np
-from scipy.signal import butter, filtfilt, detrend
 
 
-def bandpass_filter(signal: np.ndarray, lowcut: float, highcut: float, fs: float) -> np.ndarray:
-    nyq = 0.5 * fs
-    b, a = butter(4, [lowcut / nyq, highcut / nyq], btype="band")
-    return filtfilt(b, a, signal)
+def _detrend(signal: np.ndarray) -> np.ndarray:
+    """Remove linear trend via least-squares fit (replaces scipy.signal.detrend)."""
+    x = np.arange(len(signal), dtype=np.float64)
+    p = np.polyfit(x, signal, 1)
+    return signal - np.polyval(p, x)
 
 
 def quality_label(confidence: float) -> str:
@@ -20,22 +20,14 @@ def quality_label(confidence: float) -> str:
 
 def detect_anomalies(raw: np.ndarray, bpm: float, confidence: float) -> list[str]:
     flags = []
-
     if bpm < 40 or bpm > 180:
         flags.append("bpm_out_of_range")
-
-    # Clipping: overexposed (>245) or underexposed (<10) pixels
     if float(np.mean((raw < 10) | (raw > 245))) > 0.05:
         flags.append("signal_clipping")
-
-    # Flat signal: face ROI not producing useful variance
     if np.std(raw) < 1.0:
         flags.append("flat_signal")
-
-    # Low SNR: dominant frequency barely stands out
     if confidence < 0.15:
         flags.append("low_snr")
-
     return flags
 
 
@@ -50,18 +42,13 @@ def compute_bpm(green_signal: list[float], fps: float = 30.0) -> dict:
         }
 
     raw = signal.copy()
-    signal = detrend(signal)
+    signal = _detrend(signal)
 
-    try:
-        filtered = bandpass_filter(signal, 0.7, 4.0, fps)
-    except Exception:
-        return {
-            "bpm": None, "confidence": 0.0, "quality": "poor",
-            "anomalies": [], "error": "Filter failed — check fps or signal length",
-        }
+    # Hanning window reduces spectral leakage — standard in rPPG FFT pipelines
+    windowed = signal * np.hanning(len(signal))
 
-    freqs = np.fft.rfftfreq(len(filtered), d=1.0 / fps)
-    fft_mag = np.abs(np.fft.rfft(filtered))
+    freqs = np.fft.rfftfreq(len(windowed), d=1.0 / fps)
+    fft_mag = np.abs(np.fft.rfft(windowed))
 
     valid = (freqs >= 0.7) & (freqs <= 4.0)
     if not np.any(valid):
