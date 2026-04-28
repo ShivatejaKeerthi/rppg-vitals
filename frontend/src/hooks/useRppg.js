@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { API_BASE as API } from "../config";
 
-const BUFFER_SIZE = 150;
+const BUFFER_SIZE = 600; // 20s at 30fps — needed for breathing rate FFT resolution
 const CALL_INTERVAL_MS = 2000;
 const SAVE_INTERVAL_MS = 10000;
 const MIN_CONFIDENCE = 0.3;
@@ -11,6 +11,8 @@ export function useRppg() {
   const [confidence, setConfidence] = useState(0);
   const [quality, setQuality] = useState("poor");
   const [anomalies, setAnomalies] = useState([]);
+  const [brpm, setBrpm] = useState(null);
+  const [breathingConfidence, setBreathingConfidence] = useState(0);
   const [signalBuffer, setSignalBuffer] = useState([]);
   const [sessions, setSessions] = useState([]);
 
@@ -42,6 +44,8 @@ export function useRppg() {
         setConfidence(conf);
         setQuality(data.quality ?? "poor");
         setAnomalies(data.anomalies ?? []);
+        if (data.brpm != null) setBrpm(data.brpm);
+        setBreathingConfidence(data.breathing_confidence ?? 0);
 
         // Auto-save session snapshot every 10s if signal is good
         if (
@@ -70,6 +74,8 @@ export function useRppg() {
     setConfidence(0);
     setQuality("poor");
     setAnomalies([]);
+    setBrpm(null);
+    setBreathingConfidence(0);
     lastCallRef.current = 0;
     lastSaveRef.current = 0;
   }, []);
@@ -94,5 +100,5 @@ export function useRppg() {
     URL.revokeObjectURL(url);
   }, [sessions]);
 
-  return { bpm, confidence, quality, anomalies, signalBuffer, sessions, addSample, reset, clearSessions, exportCsv };
+  return { bpm, confidence, quality, anomalies, brpm, breathingConfidence, signalBuffer, sessions, addSample, reset, clearSessions, exportCsv };
 }

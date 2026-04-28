@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime, timezone
-from rppg import compute_bpm
+from rppg import compute_bpm, compute_brpm
 
 app = FastAPI(title="rPPG Heart Rate API")
 
@@ -25,6 +25,8 @@ class AnalyzeResponse(BaseModel):
     confidence: float
     quality: str = "poor"
     anomalies: list[str] = []
+    brpm: Optional[float] = None
+    breathing_confidence: float = 0.0
     error: Optional[str] = None
 
 
@@ -77,4 +79,5 @@ def analyze(req: AnalyzeRequest):
         raise HTTPException(status_code=422, detail="green_signal must not be empty")
 
     result = compute_bpm(req.green_signal, fps=req.fps)
+    result.update(compute_brpm(req.green_signal, fps=req.fps))
     return AnalyzeResponse(**result)

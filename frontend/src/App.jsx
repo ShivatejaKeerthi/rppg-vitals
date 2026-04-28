@@ -4,6 +4,7 @@ import { BpmDisplay } from "./components/BpmDisplay";
 import { SignalChart } from "./components/SignalChart";
 import { SessionHistory } from "./components/SessionHistory";
 import { BreathingExercise } from "./components/BreathingExercise";
+import { BrpmDisplay } from "./components/BrpmDisplay";
 import { useRppg } from "./hooks/useRppg";
 import { API_BASE } from "./config";
 
@@ -16,8 +17,8 @@ export default function App() {
   const [tab, setTab] = useState("hr");
   const [active, setActive] = useState(false);
   const {
-    bpm, confidence, quality, anomalies, signalBuffer, sessions,
-    addSample, reset, clearSessions, exportCsv,
+    bpm, confidence, quality, anomalies, brpm, breathingConfidence,
+    signalBuffer, sessions, addSample, reset, clearSessions, exportCsv,
   } = useRppg();
 
   // Keep Render backend warm — ping /health every 10 minutes
@@ -116,6 +117,9 @@ export default function App() {
             <div className="w-[300px] flex-none flex flex-col gap-3 min-h-0">
               <div className="flex-none">
                 <BpmDisplay bpm={bpm} confidence={confidence} quality={quality} anomalies={anomalies} />
+              </div>
+              <div className="flex-none">
+                <BrpmDisplay brpm={brpm} breathingConfidence={breathingConfidence} />
               </div>
               <div className="flex-none">
                 <SignalChart signalBuffer={signalBuffer} />

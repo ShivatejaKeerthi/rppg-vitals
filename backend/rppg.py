@@ -31,6 +31,35 @@ def detect_anomalies(raw: np.ndarray, bpm: float, confidence: float) -> list[str
     return flags
 
 
+def compute_brpm(green_signal: list[float], fps: float = 30.0) -> dict:
+    """Extract breathing rate from the low-frequency rPPG signal modulation (0.1–0.5 Hz)."""
+    signal = np.array(green_signal, dtype=np.float64)
+    min_samples = int(fps * 10)
+
+    if len(signal) < min_samples:
+        return {"brpm": None, "breathing_confidence": 0.0}
+
+    signal = _detrend(signal)
+    windowed = signal * np.hanning(len(signal))
+
+    freqs = np.fft.rfftfreq(len(windowed), d=1.0 / fps)
+    fft_mag = np.abs(np.fft.rfft(windowed))
+
+    valid = (freqs >= 0.1) & (freqs <= 0.5)
+    if not np.any(valid):
+        return {"brpm": None, "breathing_confidence": 0.0}
+
+    valid_freqs = freqs[valid]
+    valid_mag = fft_mag[valid]
+    peak_idx = np.argmax(valid_mag)
+    brpm = float(valid_freqs[peak_idx] * 60)
+
+    confidence = float(valid_mag[peak_idx] / (np.sum(valid_mag) + 1e-9))
+    confidence = round(min(confidence * 3, 1.0), 3)
+
+    return {"brpm": round(brpm, 1), "breathing_confidence": confidence}
+
+
 def compute_bpm(green_signal: list[float], fps: float = 30.0) -> dict:
     signal = np.array(green_signal, dtype=np.float64)
     min_samples = int(fps * 2)
